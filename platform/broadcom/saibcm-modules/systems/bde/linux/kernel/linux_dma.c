@@ -1149,7 +1149,8 @@ _sinval(int d, void *ptr, int length)
     /* FIXME: need proper function to replace dma_cache_sync */
     dma_sync_single_for_cpu(NULL, (unsigned long)ptr, length, DMA_BIDIRECTIONAL);
 #else
-    dma_cache_sync(NULL, ptr, length, DMA_BIDIRECTIONAL);
+    // TODO: This needs to be verified
+    dma_sync_single_for_device(NULL, ptr, length, DMA_BIDIRECTIONAL);
 #endif
 #endif
     return 0;
@@ -1165,7 +1166,8 @@ _sflush(int d, void *ptr, int length)
     /* FIXME: need proper function to replace dma_cache_sync */
     dma_sync_single_for_cpu(NULL, (unsigned long)ptr, length, DMA_BIDIRECTIONAL);
 #else
-    dma_cache_sync(NULL, ptr, length, DMA_BIDIRECTIONAL);
+    // TODO: This needs to be verified
+    dma_sync_single_for_device(NULL, ptr, length, DMA_BIDIRECTIONAL);
 #endif
 #endif
 

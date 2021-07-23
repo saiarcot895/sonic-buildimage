@@ -63,6 +63,13 @@ IMAGE_DISTRO := bullseye
 IMAGE_DISTRO_DEBS_PATH = $(TARGET_PATH)/debs/$(IMAGE_DISTRO)
 IMAGE_DISTRO_FILES_PATH = $(TARGET_PATH)/files/$(IMAGE_DISTRO)
 
+# Python 2 packages will not be available in Bullseye
+ifeq ($(BLDENV),bullseye)
+ENABLE_PY2_MODULES = n
+else
+ENABLE_PY2_MODULES = y
+endif
+
 export BUILD_NUMBER
 export BUILD_TIMESTAMP
 export SONIC_IMAGE_VERSION

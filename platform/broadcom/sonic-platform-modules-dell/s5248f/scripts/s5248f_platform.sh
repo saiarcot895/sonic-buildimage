@@ -149,7 +149,7 @@ init_devnum
 
 if [ "$1" == "init" ]; then
     modprobe i2c-dev
-    modprobe i2c-mux-pca954x force_deselect_on_exit=1
+    modprobe i2c-mux-pca954x
     modprobe ipmi_devintf
     modprobe ipmi_si
     modprobe i2c_ocores

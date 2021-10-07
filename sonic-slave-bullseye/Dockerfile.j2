@@ -3,7 +3,9 @@ FROM multiarch/qemu-user-static:x86_64-arm-5.0.0-2 as qemu
 FROM multiarch/debian-debootstrap:armhf-bullseye
 COPY --from=qemu /usr/bin/qemu-arm-static /usr/bin
 {%- elif CONFIGURED_ARCH == "arm64" and MULTIARCH_QEMU_ENVIRON == "y" %}
+FROM multiarch/qemu-user-static:x86_64-aarch64-5.2.0-2 as qemu
 FROM multiarch/debian-debootstrap:arm64-bullseye
+COPY --from=qemu /usr/bin/qemu-aarch64-static /usr/bin
 {%- else -%}
 FROM debian:bullseye
 {%- endif %}
@@ -20,6 +22,8 @@ RUN echo "deb [arch=amd64] http://debian-archive.trafficmanager.net/debian/ bull
         echo "deb [arch=amd64] http://debian-archive.trafficmanager.net/debian bullseye-backports main" >> /etc/apt/sources.list
 
 {%- if CONFIGURED_ARCH == "armhf" %}
+# for lsb_release.py says /etc/debian_version should be numeric
+RUN echo "11.0" > /etc/debian_version
 RUN echo "deb [arch=armhf] http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list && \
         echo "deb-src [arch=armhf] http://deb.debian.org/debian bullseye main contrib non-free" >> /etc/apt/sources.list && \
         echo "deb [arch=armhf] http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list && \
@@ -28,6 +32,8 @@ RUN echo "deb [arch=armhf] http://deb.debian.org/debian bullseye main contrib no
         echo "deb-src [arch=armhf] http://security.debian.org bullseye-security main contrib non-free" >> /etc/apt/sources.list && \
         echo 'deb [arch=armhf] http://ftp.debian.org/debian bullseye-backports main' >> /etc/apt/sources.list
 {%- elif CONFIGURED_ARCH == "arm64" %}
+# for lsb_release.py says /etc/debian_version should be numeric
+RUN echo "11.0" > /etc/debian_version
 RUN echo "deb [arch=arm64] http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list && \
         echo "deb-src [arch=arm64] http://deb.debian.org/debian bullseye main contrib non-free" >> /etc/apt/sources.list && \
         echo "deb [arch=arm64] http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list && \

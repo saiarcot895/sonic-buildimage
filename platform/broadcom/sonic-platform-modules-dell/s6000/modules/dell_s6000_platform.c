@@ -65,7 +65,7 @@ static struct platform_device s6000_mux = {
     .name               = "i2c-mux-gpio",
     .id                 = 0,
     .dev                = {
-	        .init_name = "i2c-mux-gpio",
+                .init_name = "i2c-mux-gpio",
                 .platform_data   = &s6000_mux_platform_data,
                 .release          = device_release
     },
@@ -1199,7 +1199,7 @@ static int __init cpld_probe(struct platform_device *pdev)
     struct i2c_adapter *parent;
     int i;
     int ret;
-  
+
     pdata = pdev->dev.platform_data;
     if (!pdata) {
         dev_err(&pdev->dev, "Missing platform data\n");
@@ -1304,7 +1304,6 @@ static int __init dell_s6000_platform_init(void)
     }
 
     gpiod_add_lookup_table(&dell_gpio_desc);
-
     ret = platform_driver_register(&cpld_driver);
     if (ret) {
         printk(KERN_WARNING "Fail to register cpld driver\n");

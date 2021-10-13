@@ -210,6 +210,11 @@ if [ "$1" == "init" ]; then
     /usr/bin/qsfp_irq_enable.py
     platform_firmware_versions
     echo 1000 > /sys/module/ipmi_si/parameters/kipmid_max_busy_us
+    echo -2 > /sys/bus/i2c/drivers/pca954x/603-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/604-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/605-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/606-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/607-0074/idle_state
 
 elif [ "$1" == "deinit" ]; then
     sys_eeprom "delete_device"

@@ -46,6 +46,17 @@ if [[ "$1" == "init" ]]; then
         systemctl start s6100-i2c-enumerate.service
     fi
 
+    echo -2 > /sys/bus/i2c/drivers/pca954x/0-0070/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/4-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/6-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/6-0072/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/7-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/7-0072/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/8-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/8-0072/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/9-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/9-0072/idle_state
+
     install_python_api_package
     monit reload
 

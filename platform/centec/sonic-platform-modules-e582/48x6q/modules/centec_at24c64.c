@@ -541,9 +541,9 @@ static int ctc_at24c64_init(void)
         return -1;
     }
 
-    client = i2c_new_device(adapter, &i2c_devs);
+    client = i2c_new_client_device(adapter, &i2c_devs);
     if(client == NULL){
-        printk(KERN_ALERT "i2c_new_device == NULL\n");
+        printk(KERN_ALERT "i2c_new_client_device == NULL\n");
         i2c_put_adapter(adapter);
         adapter = NULL;
         return -1;

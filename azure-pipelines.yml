@@ -47,6 +47,7 @@ stages:
       - name: broadcom
         variables:
           swi_image: yes
+      - name: mellanox
 
 - stage: Test
   variables:

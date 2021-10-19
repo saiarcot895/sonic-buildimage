@@ -1,7 +1,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/i2c.h>
-#include "../../pca954x/ctc_pca954x.h"
+#include "../../pca954x/ctc-pca954x.h"
 #include <linux/device.h>
 #include <linux/kdev_t.h>
 #include <linux/leds.h>

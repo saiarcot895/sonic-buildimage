@@ -22,8 +22,6 @@ RUN echo "deb [arch=amd64] http://debian-archive.trafficmanager.net/debian/ bull
         echo "deb [arch=amd64] http://debian-archive.trafficmanager.net/debian bullseye-backports main" >> /etc/apt/sources.list
 
 {%- if CONFIGURED_ARCH == "armhf" %}
-# for lsb_release.py says /etc/debian_version should be numeric
-RUN echo "11.0" > /etc/debian_version
 RUN echo "deb [arch=armhf] http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list && \
         echo "deb-src [arch=armhf] http://deb.debian.org/debian bullseye main contrib non-free" >> /etc/apt/sources.list && \
         echo "deb [arch=armhf] http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list && \
@@ -32,8 +30,6 @@ RUN echo "deb [arch=armhf] http://deb.debian.org/debian bullseye main contrib no
         echo "deb-src [arch=armhf] http://security.debian.org bullseye-security main contrib non-free" >> /etc/apt/sources.list && \
         echo 'deb [arch=armhf] http://ftp.debian.org/debian bullseye-backports main' >> /etc/apt/sources.list
 {%- elif CONFIGURED_ARCH == "arm64" %}
-# for lsb_release.py says /etc/debian_version should be numeric
-RUN echo "11.0" > /etc/debian_version
 RUN echo "deb [arch=arm64] http://deb.debian.org/debian bullseye main contrib non-free" > /etc/apt/sources.list && \
         echo "deb-src [arch=arm64] http://deb.debian.org/debian bullseye main contrib non-free" >> /etc/apt/sources.list && \
         echo "deb [arch=arm64] http://deb.debian.org/debian bullseye-updates main contrib non-free" >> /etc/apt/sources.list && \
@@ -344,6 +340,11 @@ RUN apt-get update && apt-get install -y \
         pkg-config
 
 RUN apt-get -y build-dep openssh
+
+# Build fix for ARM64 and ARMHF /etc/debian_version
+{%- if CONFIGURED_ARCH == "armhf" or CONFIGURED_ARCH == "arm64" %}
+RUN apt upgrade -y base-files
+{%- endif %}
 
 # Build fix for ARMHF bullseye libsairedis
 {%- if CONFIGURED_ARCH == "armhf" %}

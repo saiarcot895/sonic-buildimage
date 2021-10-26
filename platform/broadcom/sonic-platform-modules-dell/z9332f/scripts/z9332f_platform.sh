@@ -179,7 +179,7 @@ init_devnum
 
 if [ "$1" == "init" ]; then
     modprobe i2c-dev
-    modprobe i2c-mux-pca954x
+    modprobe cls-i2c-mux-pca954x
     modprobe ipmi_devintf
     modprobe ipmi_si kipmid_max_busy_us=1000
     modprobe cls-i2c-ocore
@@ -195,14 +195,20 @@ if [ "$1" == "init" ]; then
     platform_firmware_versions
     get_reboot_cause
     echo 1000 > /sys/module/ipmi_si/parameters/kipmid_max_busy_us
+    # Set the PCA9548 mux behavior
+    echo -2 > /sys/bus/i2c/drivers/cls_pca954x/3-0070/idle_state
+    echo -2 > /sys/bus/i2c/drivers/cls_pca954x/3-0071/idle_state
+    echo -2 > /sys/bus/i2c/drivers/cls_pca954x/3-0072/idle_state
+    echo -2 > /sys/bus/i2c/drivers/cls_pca954x/3-0073/idle_state
 
 elif [ "$1" == "deinit" ]; then
     sys_eeprom "delete_device"
     switch_board_qsfp "delete_device"
     switch_board_sfp "delete_device"
-    modprobe -r i2c-mux-pca954x
+    modprobe -r cls-i2c-mux-pca954x
     modprobe -r i2c-dev
     modprobe -r ipmi_devintf
+    modprobe -r acpi_ipmi
     modprobe -r ipmi_si
     modprobe -r cls-i2c-ocore
     modprobe -r cls-switchboard 

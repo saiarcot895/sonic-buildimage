@@ -243,6 +243,11 @@ elif [ "$1" == "deinit" ]; then
     switch_board_sfp "delete_device"
     modprobe -r i2c-mux-pca954x
     modprobe -r i2c-dev
+    modprobe -r acpi_ipmi
+    modprobe -r ipmi_devintf
+    modprobe -r ipmi_si
+    modprobe -r i2c_ocores
+    modprobe -r dell_z9264f_fpga_ocores
     remove_python_api_package
 else
      echo "z9264f_platform : Invalid option !"

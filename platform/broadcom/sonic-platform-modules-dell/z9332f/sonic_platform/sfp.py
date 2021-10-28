@@ -13,7 +13,6 @@ try:
     import re
     import time
     import subprocess
-    import struct
     import mmap
     from sonic_platform_base.sfp_base import SfpBase
     from sonic_platform_base.sonic_sfp.sff8436 import sff8436InterfaceId
@@ -60,6 +59,8 @@ QSFP_DD_APP1_ADV_OFFSET = 86
 QSFP_DD_APP1_ADV_WIDTH = 32
 QSFP_DD_APP2_ADV_OFFSET = 351
 QSFP_DD_APP2_ADV_WIDTH = 28
+QSFP_DD_MODULE_ENC_OFFSET = 3
+QSFP_DD_MODULE_ENC_WIDTH = 1
 
 QSFP_INFO_OFFSET = 128
 QSFP_DOM_OFFSET = 0
@@ -227,39 +228,40 @@ class Sfp(SfpBase):
     DELLEMC Platform-specific Sfp class
     """
     BASE_RES_PATH = "/sys/bus/pci/devices/0000:09:00.0/resource0"
+
     _port_to_i2c_mapping = {
-            1:  4,
-            2:  5,
-            3:  6,
-            4:  7,
-            5:  8,
-            6:  9,
-            7:  10,
-            8:  11,
-            9:  12,
-            10: 13,
-            11: 14,
-            12: 15,
-            13: 16,
-            14: 17,
-            15: 18,
-            16: 19,
-            17: 20,
-            18: 21,
-            19: 22,
-            20: 23,
-            21: 24,
-            22: 25,
-            23: 26,
-            24: 27,
-            25: 28,
-            26: 29,
-            27: 30,
-            28: 31,
-            29: 32,
-            30: 33,
-            31: 34,
-            32: 35,
+            1:  10,
+            2:  11,
+            3:  12,
+            4:  13,
+            5:  14,
+            6:  15,
+            7:  16,
+            8:  17,
+            9:  18,
+            10: 19,
+            11: 20,
+            12: 21,
+            13: 22,
+            14: 23,
+            15: 24,
+            16: 25,
+            17: 26,
+            18: 27,
+            19: 28,
+            20: 29,
+            21: 30,
+            22: 31,
+            23: 32,
+            24: 33,
+            25: 34,
+            26: 35,
+            27: 36,
+            28: 37,
+            29: 38,
+            30: 39,
+            31: 40,
+            32: 41,
             33: 1,
             34: 2
             }
@@ -311,16 +313,12 @@ class Sfp(SfpBase):
 
     def pci_mem_read(self, mm, offset):
         mm.seek(offset)
-        read_data_stream = mm.read(4)
-        reg_val = struct.unpack('I', read_data_stream)
-        mem_val = str(reg_val)[1:-2]
-        # print "reg_val read:%x"%reg_val
-        return mem_val
+        return mm.read_byte()
 
     def pci_mem_write(self, mm, offset, data):
         mm.seek(offset)
         # print "data to write:%x"%data
-        mm.write(struct.pack('I', data))
+        mm.write_byte(data)
 
     def pci_set_value(self, resource, val, offset):
         fd = os.open(resource, os.O_RDWR)
@@ -337,6 +335,15 @@ class Sfp(SfpBase):
         mm.close()
         os.close(fd)
         return val
+
+    def _write_eeprom_bytes(self, offset, num_bytes, value):
+        try:
+            with open(self.eeprom_path, mode='r+b', buffering=0) as f:
+                f.seek(offset)
+                f.write(value[0:num_bytes])
+        except (OSError, IOError):
+            return False
+        return True
 
     def _read_eeprom_bytes(self, eeprom_path, offset, num_bytes):
         eeprom_raw = []
@@ -994,7 +1001,13 @@ class Sfp(SfpBase):
         """
         lpmode_state = False
         try:
-            if self.sfp_type.startswith('QSFP'):
+            if self.sfp_type == 'QSFP_DD':
+                lpmode = self._read_eeprom_bytes(self.eeprom_path, QSFP_DD_MODULE_ENC_OFFSET, QSFP_DD_MODULE_ENC_WIDTH)
+                if lpmode is not None:
+                    if int(lpmode[0])>>1 == 1:
+                        return True
+                return False
+            else:
                 # Port offset starts with 0x4000
                 port_offset = 16384 + ((self.index-1) * 16)
 
@@ -1005,8 +1018,9 @@ class Sfp(SfpBase):
                 mask = (1 << 6)
 
                 lpmode_state = (reg_value & mask)
-        except  ValueError: pass
-        return lpmode_state
+        except ValueError:
+            pass
+        return bool(lpmode_state)
 
     def get_power_override(self):
         """
@@ -1231,7 +1245,14 @@ class Sfp(SfpBase):
         Sets the lpmode(low power mode) of this SFP
         """
         try:
-            if self.port_type == 'QSFP_DD':
+            if self.sfp_type == 'QSFP_DD':
+                if lpmode is True:
+                    write_val = 0x10
+                else:
+                    write_val = 0x0
+
+                self._write_eeprom_bytes(26, 1, bytearray([write_val]))
+            else:
                 # Port offset starts with 0x4000
                 port_offset = 16384 + ((self.index-1) * 16)
 

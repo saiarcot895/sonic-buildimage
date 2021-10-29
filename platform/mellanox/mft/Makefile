@@ -47,7 +47,7 @@ ifeq ($(DISTRO), bullseye)
 
 	popd
 
-	sudo dkms build kernel-mft-dkms/$(MFT_VERSION) -k $(KVERSION) -a amd64 --kernelsourcedir /usr/src/linux-headers-$(KVERSION)
+	sudo dkms build kernel-mft-dkms/$(MFT_VERSION) -k $(KVERSION) -a amd64
 	sudo dkms mkbmdeb kernel-mft-dkms/$(MFT_VERSION) -k $(KVERSION) -a amd64
 
 	# w/a: remove dependencies

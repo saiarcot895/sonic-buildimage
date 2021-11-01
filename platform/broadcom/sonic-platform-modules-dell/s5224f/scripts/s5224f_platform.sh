@@ -172,7 +172,7 @@ init_devnum
 
 if [ "$1" == "init" ]; then
     modprobe i2c-dev
-    modprobe i2c-mux-pca954x force_deselect_on_exit=1
+    modprobe i2c-mux-pca954x
     modprobe ipmi_devintf
     modprobe ipmi_si kipmid_max_busy_us=1000
     modprobe i2c_ocores
@@ -186,6 +186,10 @@ if [ "$1" == "init" ]; then
     install_python_api_package
     #python /usr/bin/qsfp_irq_enable.py
     platform_firmware_versions
+    echo -2 > /sys/bus/i2c/drivers/pca954x/603-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/604-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/605-0074/idle_state
+    echo -2 > /sys/bus/i2c/drivers/pca954x/606-0074/idle_state
 
 elif [ "$1" == "deinit" ]; then
     sys_eeprom "delete_device"
@@ -194,9 +198,12 @@ elif [ "$1" == "deinit" ]; then
 
     modprobe -r i2c-mux-pca954x
     modprobe -r i2c-dev
-    remove_python_api_package
     modprobe -r ipmi_devintf
     modprobe -r ipmi_si
+    modprobe -r acpi_ipmi
+    modprobe -r i2c_ocores
+    modprobe -r dell_s5224f_fpga_ocores
+    remove_python_api_package
 else
      echo "s5224f_platform : Invalid option !"
 fi

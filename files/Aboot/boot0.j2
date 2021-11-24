@@ -474,11 +474,13 @@ write_platform_specific_cmdline() {
         flash_size=2000
         cmdline_add modprobe.blacklist=radeon,sp5100_tco
         cmdline_add acpi=off
+        cmdline_add memmap=1536M!512M
     fi
     if [ "$platform" = "crow" ]; then
         # Assuming sid=Clearlake
         aboot_machine=arista_7050_qx32s
         cmdline_add modprobe.blacklist=radeon,sp5100_tco
+        cmdline_add memmap=1536M!512M
     fi
     if [ "$sid" = "Upperlake" ] || [ "$sid" = "UpperlakeES" ]; then
         aboot_machine=arista_7060_cx32s

@@ -357,7 +357,9 @@ RUN apt-get update && apt-get install -y \
         pkg-config \
 # For audisp-tacplus
         libauparse-dev \
-        auditd
+        auditd \
+# For ccache
+        ccache
 
 # For iproute2
 RUN apt-get install -y -t buster-backports \

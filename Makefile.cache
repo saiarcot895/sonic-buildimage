@@ -80,6 +80,15 @@ SONIC_COMMON_BASE_FILES_LIST  := sonic-slave-jessie/Dockerfile.j2 sonic-slave-je
                                  sonic-slave-bullseye/Dockerfile.j2 sonic-slave-bullseye/Dockerfile.user.j2
 
 
+ifneq ($(SONIC_CCACHE_DIR),)
+export CCACHE_DIR := /ccache
+export CCACHE_MAXSIZE := 25G
+export CCACHE_UMASK := 002
+export CCACHE_NOCOMPRESS := 1
+export CCACHE_NOHARDLINK := 1
+export PATH := /usr/lib/ccache:$(PATH)
+endif
+
 
 include $(RULES_PATH)/*.dep
 

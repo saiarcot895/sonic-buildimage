@@ -190,6 +190,10 @@ ifneq ($(MULTIARCH_QEMU_ENVIRON), y)
 endif
 endif
 
+ifneq ($(SONIC_CCACHE_DIR),)
+	DOCKER_RUN += -v "$(SONIC_CCACHE_DIR):/ccache:rw"
+endif
+
 ifeq ($(MULTIARCH_QEMU_ENVIRON), y)
 ifeq ($(DOCKER_DATA_ROOT_FOR_MULTIARCH),)
 	DOCKER_DATA_ROOT_FOR_MULTIARCH := /var/lib/march/docker

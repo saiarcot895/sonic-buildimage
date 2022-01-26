@@ -110,6 +110,12 @@ sudo cp files/apt/apt.conf.d/{81norecommends,apt-{clean,gzip-indexes,no-language
 ## Note: set lang to prevent locale warnings in your chroot
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y update
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y upgrade
+
+## Setup eatmydata and symlinks
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install eatmydata
+sudo ln -s /usr/bin/eatmydata $FILESYSTEM_ROOT/usr/local/bin/dpkg
+echo 'Dir::Bin::dpkg "/usr/local/bin/dpkg";' | sudo tee "${FILESYSTEM_ROOT}/etc/apt/apt.conf.d/00sonic-install-eatmydata" > /dev/null
+
 echo '[INFO] Install packages for building image'
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install makedev psmisc
 
@@ -129,11 +135,11 @@ fi
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y install busybox linux-base
 echo '[INFO] Install SONiC linux kernel image'
 ## Note: duplicate apt-get command to ensure every line return zero
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/initramfs-tools-core_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/initramfs-tools-core_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/initramfs-tools_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/initramfs-tools_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/linux-image-${LINUX_KERNEL_VERSION}-*_${CONFIGURED_ARCH}.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/linux-image-${LINUX_KERNEL_VERSION}-*_${CONFIGURED_ARCH}.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install acl
 if [[ $CONFIGURED_ARCH == amd64 ]]; then
@@ -556,6 +562,11 @@ fi
 
 # Remove GCC
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y remove gcc
+
+## Remove eatmydata
+sudo rm $FILESYSTEM_ROOT/etc/apt/apt.conf.d/00sonic-install-eatmydata
+sudo rm $FILESYSTEM_ROOT/usr/local/bin/dpkg
+sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y remove eatmydata
 
 ## Clean up apt
 sudo LANG=C chroot $FILESYSTEM_ROOT apt-get -y autoremove

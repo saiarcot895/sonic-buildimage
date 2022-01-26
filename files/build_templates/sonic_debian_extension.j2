@@ -99,11 +99,11 @@ sudo mkdir -p $FILESYSTEM_ROOT_USR_SHARE_SONIC_FIRMWARE/
 sudo mkdir -p $FILESYSTEM_ROOT_USR_LIB_SYSTEMD_SYSTEM
 
 # Install a patched version of ifupdown2  (and its dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/ifupdown2_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/ifupdown2_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 
 # Install a patched version of ntp  (and its dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT --force-confdef --force-confold -i $debs_path/ntp_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT --force-confdef --force-confold -i $debs_path/ntp_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y \
     -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" install -f
 
@@ -153,9 +153,9 @@ if [[ $CONFIGURED_ARCH == armhf || $CONFIGURED_ARCH == arm64 ]]; then
 fi
 
 # Install sonic-yang-models Python 3 package, install dependencies
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libyang_*.deb
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libyang-cpp_*.deb
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/python3-yang_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libyang_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libyang-cpp_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/python3-yang_*.deb
 SONIC_YANG_MODEL_PY3_WHEEL_NAME=$(basename {{sonic_yang_models_py3_wheel_path}})
 sudo cp {{sonic_yang_models_py3_wheel_path}} $FILESYSTEM_ROOT/$SONIC_YANG_MODEL_PY3_WHEEL_NAME
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install $SONIC_YANG_MODEL_PY3_WHEEL_NAME
@@ -221,11 +221,11 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install $SONIC
 sudo rm -rf $FILESYSTEM_ROOT/$SONIC_UTILITIES_PY3_WHEEL_NAME
 
 # Install sonic-utilities data files (and any dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-utilities-data_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-utilities-data_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 
 # Install customized bash version to patch bash plugin support.
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/bash_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/bash_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 
 # sonic-utilities-data installs bash-completion as a dependency. However, it is disabled by default
@@ -246,48 +246,48 @@ sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install $SONIC
 sudo rm -rf $FILESYSTEM_ROOT/$SONIC_HOST_SERVICES_PY3_WHEEL_NAME
 
 # Install SONiC host services data files (and any dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-host-services-data_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-host-services-data_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 
 {% if enable_ztp == "y" %}
 # Install ZTP (and its dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-ztp_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-ztp_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 {% endif %}
 
 {% for machine_debs in lazy_build_installer_debs.strip().split() -%}
 {% set machine, pkgname = machine_debs.split('|') %}
 if [[ -z "{{machine}}" || -n "{{machine}}" && $TARGET_MACHINE == "{{machine}}" ]]; then
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/{{pkgname}} || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/{{pkgname}} || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 fi
 {% endfor %}
 
 # Install SONiC Device Data  (and its dependencies via 'apt-get -y install -f')
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-device-data_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/sonic-device-data_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 
 # Install pam-tacplus and nss-tacplus
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libtac2_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libtac2_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libpam-tacplus_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libpam-tacplus_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libnss-tacplus_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libnss-tacplus_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 # Install bash-tacplus
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/bash-tacplus_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/bash-tacplus_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 # Install audisp-tacplus
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/audisp-tacplus_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/audisp-tacplus_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 # Disable tacplus by default
 sudo LANG=C chroot $FILESYSTEM_ROOT pam-auth-update --remove tacplus
 sudo sed -i -e '/^passwd/s/ tacplus//' $FILESYSTEM_ROOT/etc/nsswitch.conf
 
 # Install pam-radius-auth and nss-radius
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libpam-radius-auth_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libpam-radius-auth_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libnss-radius_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/libnss-radius_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 # Disable radius by default
 # radius does not have any profiles
@@ -309,12 +309,12 @@ fi
 # Install python-swss-common package and all its dependent packages
 {% if python_swss_debs.strip() -%}
 {% for deb in python_swss_debs.strip().split(' ') -%}
-sudo dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 {% endfor %}
 {% endif %}
 
 # Install custom-built monit package and SONiC configuration files
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/monit_*.deb || \
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/monit_*.deb || \
     sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 sudo cp $IMAGE_CONFIGS/monit/monitrc $FILESYSTEM_ROOT/etc/monit/
 sudo chmod 600 $FILESYSTEM_ROOT/etc/monit/monitrc
@@ -328,14 +328,14 @@ sudo cp $IMAGE_CONFIGS/monit/restart_service $FILESYSTEM_ROOT/usr/bin/
 sudo chmod 755 $FILESYSTEM_ROOT/usr/bin/restart_service
 
 # Install custom-built smartmontools
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/smartmontools_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/smartmontools_*.deb
 
 # Install custom-built openssh sshd
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/openssh-server_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/openssh-server_*.deb
 
 {% if sonic_asic_platform == 'broadcom' %}
 # Install custom-built flashrom
-sudo dpkg --root=$FILESYSTEM_ROOT -i $debs_path/flashrom_*.deb
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i $debs_path/flashrom_*.deb
 {% endif %}
 
 # Copy crontabs
@@ -592,7 +592,7 @@ sudo chmod a+x $FILESYSTEM_ROOT/usr/sbin/policy-rc.d
 
 {% if installer_debs.strip() -%}
 {% for deb in installer_debs.strip().split(' ') -%}
-sudo dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f
 {% endfor %}
 {% endif %}
 
@@ -608,7 +608,7 @@ sudo LANG=C chroot $FILESYSTEM_ROOT depmod -a {{kversion}}
 {% set debfilename = deb.split('/')|last -%}
 {% set debname = debfilename.split('_')|first -%}
 
-sudo dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f --download-only
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -i {{deb}} || sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install -f --download-only
 
 sudo mkdir -p $FILESYSTEM_ROOT/$PLATFORM_DIR/{{dev}}
 sudo cp {{ deb }} $FILESYSTEM_ROOT/$PLATFORM_DIR/{{dev}}/
@@ -616,7 +616,7 @@ for f in $(find $FILESYSTEM_ROOT/var/cache/apt/archives -name "*.deb"); do
     sudo mv $f $FILESYSTEM_ROOT/$PLATFORM_DIR/{{dev}}/
 done
 
-sudo dpkg --root=$FILESYSTEM_ROOT -P {{ debname }}
+sudo eatmydata dpkg --root=$FILESYSTEM_ROOT -P {{ debname }}
 
 {% endfor %}
 {% endif %}

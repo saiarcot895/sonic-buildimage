@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 
-export DEB_BUILD_MAINT_OPTIONS=hardening=+all
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all
+
+ifneq (,$(filter asan,$(DEB_BUILD_PROFILES)))
+export DEB_BUILD_MAINT_OPTIONS += sanitize=+address
+endif
 
 DEB_CFLAGS_APPEND=-std=gnu11
 export DEB_CFLAGS_APPEND

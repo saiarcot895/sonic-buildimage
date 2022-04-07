@@ -4,29 +4,24 @@ CP := cp
 MKDIR := mkdir
 CC := gcc
 MV := mv
+CPPFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)"
+LDLIBS += -levent -lexplain
+
+# All Target
+all: $(DHCPMON_TARGET)
 
 # All of the sources participating in the build are defined here
 -include src/subdir.mk
--include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(strip $(C_DEPS)),)
--include $(C_DEPS)
-endif
+-include $(OBJS:%.o=%.d)
 endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 
-# All Target
-all: sonic-dhcpmon
-
 # Tool invocations
-sonic-dhcpmon: $(OBJS) $(USER_OBJS)
-	@echo 'Building target: $@'
-	@echo 'Invoking: GCC C Linker'
-	$(CC) -o "$(DHCPMON_TARGET)" $(OBJS) $(USER_OBJS) $(LIBS)
-	@echo 'Finished building target: $@'
-	@echo ' '
+$(DHCPMON_TARGET): $(OBJS)
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # Other Targets
 install:
@@ -38,7 +33,7 @@ deinstall:
 	$(RM) -rf $(DESTDIR)/usr/sbin
 
 clean:
-	-$(RM) $(EXECUTABLES)$(OBJS)$(C_DEPS) $(DHCPMON_TARGET)
+	-$(RM) $(EXECUTABLES) $(OBJS:%.o=%.d) $(C_DEPS) $(DHCPMON_TARGET)
 	-@echo ' '
 
 .PHONY: all clean dependents

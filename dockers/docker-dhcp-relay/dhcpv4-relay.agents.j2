@@ -35,6 +35,9 @@ stdout_logfile=syslog
 stderr_logfile=syslog
 dependent_startup=true
 dependent_startup_wait_for=start:exited
+{% if ENABLE_ASAN == "y" %}
+environment=ASAN_OPTIONS="log_path=/var/log/isc-dhcpv4-relay-{{ vlan_name }}-asan.log:disable_coredump=0:unmap_shadow_on_exit=1:abort_on_error=1"
+{% endif %}
 
 {% endif %}
 {% endif %}

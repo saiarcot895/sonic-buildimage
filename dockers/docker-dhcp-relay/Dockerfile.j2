@@ -28,11 +28,15 @@ RUN apt-get clean -y         && \
     apt-get autoremove -y    && \
     rm -rf /debs
 
-COPY ["docker_init.sh", "start.sh", "/usr/bin/"]
+COPY ["docker_init.sh.j2", "start.sh", "/usr/bin/"]
 COPY ["docker-dhcp-relay.supervisord.conf.j2", "port-name-alias-map.txt.j2", "wait_for_intf.sh.j2", "/usr/share/sonic/templates/"]
 COPY ["dhcp-relay.programs.j2", "dhcpv4-relay.agents.j2", "dhcpv6-relay.agents.j2", "dhcp-relay.monitors.j2", "/usr/share/sonic/templates/"]
 COPY ["files/supervisor-proc-exit-listener", "/usr/bin"]
 COPY ["critical_processes", "/etc/supervisor"]
 COPY ["cli", "/cli/"]
+
+RUN sonic-cfggen -a '{"ENABLE_ASAN":"{{ENABLE_ASAN}}"}' -t /usr/bin/docker_init.sh.j2 > /usr/bin/docker_init.sh
+RUN rm -f /usr/bin/docker_init.sh.j2
+RUN chmod +x /usr/bin/docker_init.sh
 
 ENTRYPOINT ["/usr/bin/docker_init.sh"]

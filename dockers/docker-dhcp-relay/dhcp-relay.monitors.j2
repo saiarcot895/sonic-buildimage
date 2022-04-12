@@ -73,5 +73,8 @@ dependent_startup_wait_for=
 
 {% set _dummy = relay_for_ipv4.update({'flag': False}) %}
 {% set _dummy = relay_for_ipv6.update({'flag': False}) %}
+{% if ENABLE_ASAN == "y" %}
+environment=ASAN_OPTIONS="log_path=/var/log/dhcpmon-{{ vlan_name }}-asan.log:disable_coredump=0:unmap_shadow_on_exit=1:abort_on_error=1"
+{% endif %}
 {% endif %}
 {% endfor %}

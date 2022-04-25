@@ -89,6 +89,8 @@ RUN apt-get -y purge   \
     exim4-config       \
     exim4-daemon-light
 
+COPY ["local-package-preferences", "/etc/apt/preferences.d"]
+
 {% if docker_base_bullseye_debs.strip() -%}
 # Copy locally-built Debian package dependencies
 {{ copy_files("debs/", docker_base_bullseye_debs.split(' '), "/debs/") }}

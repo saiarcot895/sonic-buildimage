@@ -14,9 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-include $(PLATFORM_PATH)/sdk.mk
+# TODO: update for Bookworm: sdk, mft
+#include $(PLATFORM_PATH)/sdk.mk
 include $(PLATFORM_PATH)/fw.mk
-# TODO: update for Bookworm
 #include $(PLATFORM_PATH)/mft.mk
 include $(PLATFORM_PATH)/mft-fwtrace-cfg.mk
 include $(PLATFORM_PATH)/mlnx-sai.mk

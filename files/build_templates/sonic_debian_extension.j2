@@ -199,8 +199,8 @@ sudo cp {{system_health_py3_wheel_path}} $FILESYSTEM_ROOT/$SYSTEM_HEALTH_PY3_WHE
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install $SYSTEM_HEALTH_PY3_WHEEL_NAME
 sudo rm -rf $FILESYSTEM_ROOT/$SYSTEM_HEALTH_PY3_WHEEL_NAME
 
-# Install m2crypto package, used by sonic-utilities
-sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install python3-m2crypto
+# Install m2crypto and cryptography packages, used by sonic-utilities
+sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install python3-m2crypto python3-cryptography
 
 # install libffi-dev to match utilities' dependency.
 sudo LANG=C DEBIAN_FRONTEND=noninteractive chroot $FILESYSTEM_ROOT apt-get -y install libffi-dev
@@ -476,16 +476,6 @@ sudo LANG=C chroot $FILESYSTEM_ROOT systemctl enable systemd-bootchart
 {% endif %}
 {% endif %}
 
-if [[ $CONFIGURED_ARCH == armhf ]]; then
-    # The azure-storage package depends on the cryptography package. Newer
-    # versions of cryptography require the rust compiler, the correct version
-    # for which is not readily available in buster. Hence we pre-install an
-    # older version here to satisfy the azure-storage dependency.
-    # Note: This is not a problem for other architectures as pre-built versions
-    # of cryptography are available for those. This sequence can be removed
-    # after upgrading to debian bullseye.
-    sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install cryptography==3.3.1
-fi
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install azure-storage==0.36.0
 sudo https_proxy=$https_proxy LANG=C chroot $FILESYSTEM_ROOT pip3 install watchdog==0.10.3
 

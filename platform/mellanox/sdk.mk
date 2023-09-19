@@ -165,7 +165,8 @@ endef
 
 $(eval $(foreach deb,$(MLNX_SDK_DEBS) $(MLNX_SDK_RDEBS) $(PYTHON_SDK_API),$(call make_url,$(deb))))
 
-SONIC_MAKE_DEBS += $(SX_KERNEL)
+# Disable SX_KERNEL until SDK supports bookworm
+# SONIC_MAKE_DEBS += $(SX_KERNEL)
 
 ifeq ($(SDK_FROM_SRC), y)
 SONIC_MAKE_DEBS += $(MLNX_SDK_RDEBS) $(PYTHON_SDK_API)
@@ -173,6 +174,6 @@ else
 SONIC_ONLINE_DEBS += $(MLNX_SDK_RDEBS) $(PYTHON_SDK_API)
 endif
 
-mlnx-sdk-packages: $(addprefix $(DEBS_PATH)/, $(MLNX_SDK_RDEBS) $(PYTHON_SDK_API) $(SX_KERNEL))
+mlnx-sdk-packages: $(addprefix $(DEBS_PATH)/, $(MLNX_SDK_RDEBS) $(PYTHON_SDK_API)) #$(SX_KERNEL)
 
 SONIC_PHONY_TARGETS += mlnx-sdk-packages

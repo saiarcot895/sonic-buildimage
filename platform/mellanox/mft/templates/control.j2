@@ -4,6 +4,7 @@ Version: {{mft_version}}
 Architecture: amd64
 Maintainer: Vivek Reddy <vkarri@nvidia.com>
 Provides: kernel-mft-dkms-modules
+Depends: linux-image-{{ kversion }}-unsigned
 Section: misc
 Priority: optional
 Description: kernel-mft-dkms binary drivers for linux-image-{{kversion}} Kernel

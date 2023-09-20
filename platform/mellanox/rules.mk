@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# TODO: update for Bookworm: mft, iproute2
+# TODO: update for Bookworm: sx_kernel & issu-version
 include $(PLATFORM_PATH)/sdk.mk
 include $(PLATFORM_PATH)/fw.mk
-#include $(PLATFORM_PATH)/mft.mk
+include $(PLATFORM_PATH)/mft.mk
 include $(PLATFORM_PATH)/mft-fwtrace-cfg.mk
 include $(PLATFORM_PATH)/mlnx-sai.mk
 include $(PLATFORM_PATH)/hw-management.mk

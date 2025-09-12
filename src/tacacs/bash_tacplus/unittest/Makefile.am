@@ -3,6 +3,9 @@ AUTOMAKE_OPTIONS = subdir-objects
 noinst_PROGRAMS = plugin_test
 TESTS = plugin_test
 
+# use customize CFLAGS because trixie will add -Werror=implicit-function-declaration to CFLAGS
+CFLAGS = -g -O2 -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection
+
 # disable some warning because UT need test functions not in header file.
 CFLAGS_TEST = -Wno-parentheses -Wno-format-security -Wno-implicit-function-declaration -Wno-int-to-pointer-cast
 IFLAGS_TEST = -I.. -I../include -I../lib

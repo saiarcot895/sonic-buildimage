@@ -43,7 +43,7 @@ class Eeprom(TlvInfoDecoder):
 
         if self.is_sys_eeprom:
             self.start_offset = 0
-            self.eeprom_path = self.I2C_DIR + "i2c-0/0-0053/eeprom"
+            self.eeprom_path = self.I2C_DIR + "0-0053/eeprom"
 
             # System EEPROM is in ONIE TlvInfo EEPROM format
             super(Eeprom, self).__init__(self.eeprom_path,
@@ -54,7 +54,7 @@ class Eeprom(TlvInfoDecoder):
                 self.index = psu_index
                 self.start_offset = 18
                 self.eeprom_path = self.I2C_DIR \
-                    + "i2c-1/1-005{}/eeprom".format(self.index - 1)
+                    + "1-005{}/eeprom".format(self.index - 1)
                 self.format = psu_eeprom_format
 
                 # Decode device eeprom as per specified format
@@ -64,7 +64,7 @@ class Eeprom(TlvInfoDecoder):
                 self.index = fan_index
                 self.start_offset = 0
                 self.eeprom_path = self.I2C_DIR \
-                    + "i2c-0/0-005{}/eeprom".format(self.index + 4)
+                    + "0-005{}/eeprom".format(self.index + 4)
 
                 # Fan EEPROM is in ONIE TlvInfo EEPROM format
                 super(Eeprom, self).__init__(self.eeprom_path,

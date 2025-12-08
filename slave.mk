@@ -1202,7 +1202,7 @@ $(addprefix $(TARGET_PATH)/, $(DOCKER_IMAGES)) : $(TARGET_PATH)/%.gz : .platform
 			--build-arg SONIC_VERSION_CACHE=$(SONIC_VERSION_CACHE) \
 			--build-arg SONIC_VERSION_CACHE_SOURCE=$(SONIC_VERSION_CACHE_SOURCE) \
 			--build-arg image_version=$(SONIC_IMAGE_VERSION) \
-			--label com.azure.sonic.manifest="$$(cat $($*.gz_PATH)/manifest.json)" \
+			--label com.azure.sonic.manifest="$$(jq -c . $($*.gz_PATH)/manifest.json)" \
 			--label Tag=$(SONIC_IMAGE_VERSION) \
 		        $($(subst -,_,$(notdir $($*.gz_PATH)))_labels) \
 			-t $(DOCKER_IMAGE_REF) $($*.gz_PATH) $(LOG)
@@ -1266,7 +1266,7 @@ $(addprefix $(TARGET_PATH)/, $(DOCKER_DBG_IMAGES)) : $(TARGET_PATH)/%-$(DBG_IMAG
 			--build-arg docker_container_name=$($*.gz_CONTAINER_NAME) \
 			--build-arg SONIC_VERSION_CACHE=$(SONIC_VERSION_CACHE) \
 			--build-arg SONIC_VERSION_CACHE_SOURCE=$(SONIC_VERSION_CACHE_SOURCE) \
-			--label com.azure.sonic.manifest="$$(cat $($*.gz_PATH)/manifest.json)" \
+			--label com.azure.sonic.manifest="$$(jq -c . $($*.gz_PATH)/manifest.json)" \
 			--label Tag=$(SONIC_IMAGE_VERSION) \
 			--file $($*.gz_PATH)/Dockerfile-dbg \
 			-t $(DOCKER_DBG_IMAGE_REF) $($*.gz_PATH) $(LOG)

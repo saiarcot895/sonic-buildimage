@@ -99,16 +99,6 @@ ifeq ($(J2_VER),)
 $(error Please install j2 (sudo pip install jinjanator))
 endif
 
-# Check for minimum Docker version on build host
-# Note: Using the greater of CE (17.05.0) and EE (17.06.1) versions that support ARG before FROM
-docker_min := 17.06.1
-docker_min_ver := $(shell echo "$(docker_min)" | awk -F. '{printf("%d%03d%03d\n",$$1,$$2,$$3);}' 2>/dev/null)
-docker_ver := $(shell docker info 2>/dev/null | grep -i "server version" | rev | cut -d' ' -f1 | rev | awk -F. '{printf("%d%03d%03d\n",$$1,$$2,$$3);}' 2>/dev/null)
-docker_is_valid := $(shell if [[ "$(docker_ver)" -lt $(docker_min_ver) ]] ; then echo "0"; else echo "1"; fi)
-ifeq (0,$(docker_is_valid))
-$(error SONiC requires Docker version $(docker_min) or later)
-endif
-
 # Remove lock file in case previous run was forcefully stopped
 $(shell rm -f .screen)
 
@@ -440,7 +430,7 @@ DOCKER_SLAVE_BASE_BUILD = docker build --no-cache \
 DOCKER_BASE_PULL = docker pull \
 			$(REGISTRY_SERVER):$(REGISTRY_PORT)$(REGISTRY_SERVER_PATH)/$(SLAVE_BASE_IMAGE):$(SLAVE_BASE_TAG)
 
-DOCKER_USER_BUILD = docker build --no-cache \
+DOCKER_USER_BUILD = docker build --no-cache --cap-add AUDIT_WRITE,AUDIT_CONTROL,NET_RAW \
 	       --build-arg user=$(USER) \
 	       --build-arg uid=$(shell id -u) \
 	       --build-arg guid=$(shell id -g) \

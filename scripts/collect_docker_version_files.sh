@@ -36,9 +36,9 @@ if docker container inspect $DOCKER_IMAGE > /dev/null 2>&1; then
     docker container rm $DOCKER_IMAGE > /dev/null
 fi
 docker create --name $DOCKER_CONTAINER --entrypoint /bin/bash $DOCKER_IMAGE_TAG
-docker cp -L $DOCKER_CONTAINER:/etc/os-release $TARGET_VERSIONS_PATH/
-docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/pre-versions $TARGET_VERSIONS_PATH/
-docker cp -L $DOCKER_CONTAINER:/usr/local/share/buildinfo/post-versions $TARGET_VERSIONS_PATH/
+docker cp $DOCKER_CONTAINER:/etc/os-release $TARGET_VERSIONS_PATH/
+docker cp $DOCKER_CONTAINER:/usr/local/share/buildinfo/pre-versions $TARGET_VERSIONS_PATH/
+docker cp $DOCKER_CONTAINER:/usr/local/share/buildinfo/post-versions $TARGET_VERSIONS_PATH/
 
 # Save the cache contents from docker build
 IMAGENAME=${DOCKER_IMAGE_TAG} j2 files/build_templates/build_docker_cache.j2 > ${DOCKER_FILE}.cleanup

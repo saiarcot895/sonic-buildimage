@@ -4,15 +4,15 @@ Date: Fri, 13 May 2022 02:32:37 +0200
 Subject: [PATCH] Extend LACP fallback support to multiple ports
 
 ---
- teamd/teamd_runner_lacp.c | 127 ++++++++++++++++++++++++++++++++------
- utils/teamdctl.c          |   7 ++-
- 2 files changed, 113 insertions(+), 21 deletions(-)
+ teamd/teamd_runner_lacp.c |   96 ++++++++++++++++++++++++++++++++++++---------
+ utils/teamdctl.c          |    7 ++-
+ 2 files changed, 82 insertions(+), 21 deletions(-)
 
 diff --git a/teamd/teamd_runner_lacp.c b/teamd/teamd_runner_lacp.c
-index 1e5478b..e6676df 100644
+index a3be384..1e67d56 100644
 --- a/teamd/teamd_runner_lacp.c
 +++ b/teamd/teamd_runner_lacp.c
-@@ -213,6 +213,7 @@ enum lacp_port_state {
+@@ -225,6 +225,7 @@ enum lacp_port_state {
  	PORT_STATE_CURRENT = 1,
  	PORT_STATE_EXPIRED = 2,
  	PORT_STATE_DEFAULTED = 3,
@@ -20,7 +20,7 @@ index 1e5478b..e6676df 100644
  };
  
  static const char *lacp_port_state_name[] = {
-@@ -220,6 +221,7 @@ static const char *lacp_port_state_name[] = {
+@@ -232,6 +233,7 @@ static const char *lacp_port_state_name[] = {
  	"current",
  	"expired",
  	"defaulted",
@@ -28,7 +28,7 @@ index 1e5478b..e6676df 100644
  };
  
  struct lacp_port {
-@@ -590,24 +592,10 @@ static bool lacp_port_loopback_free(struct lacp_port *lacp_port)
+@@ -602,24 +604,10 @@ static bool lacp_port_loopback_free(struct lacp_port *lacp_port)
  	return true;
  }
  
@@ -54,7 +54,7 @@ index 1e5478b..e6676df 100644
  		return true;
  	return false;
  }
-@@ -616,7 +604,7 @@ static bool lacp_port_unselectable_state(struct lacp_port *lacp_port)
+@@ -628,7 +616,7 @@ static bool lacp_port_unselectable_state(struct lacp_port *lacp_port)
  {
  	if (lacp_port->state == PORT_STATE_CURRENT ||
  	    lacp_port->state == PORT_STATE_EXPIRED ||
@@ -63,7 +63,7 @@ index 1e5478b..e6676df 100644
  		return false;
  	return true;
  }
-@@ -633,7 +621,7 @@ static int lacp_port_should_be_enabled(struct lacp_port *lacp_port)
+@@ -645,7 +633,7 @@ static int lacp_port_should_be_enabled(struct lacp_port *lacp_port)
  	if (lacp_port_selected(lacp_port) &&
  	    lacp_port->agg_lead == lacp->selected_agg_lead &&
  	    (lacp_port->partner.state & INFO_STATE_SYNCHRONIZATION ||
@@ -72,7 +72,7 @@ index 1e5478b..e6676df 100644
  		return true;
  	return false;
  }
-@@ -645,7 +633,7 @@ static int lacp_port_should_be_disabled(struct lacp_port *lacp_port)
+@@ -657,7 +645,7 @@ static int lacp_port_should_be_disabled(struct lacp_port *lacp_port)
  	if (!lacp_port_selected(lacp_port) ||
  	    lacp_port->agg_lead != lacp->selected_agg_lead ||
  	    (!(lacp_port->partner.state & INFO_STATE_SYNCHRONIZATION) &&
@@ -81,7 +81,7 @@ index 1e5478b..e6676df 100644
  		return true;
  	return false;
  }
-@@ -1313,7 +1301,7 @@ static void lacp_port_actor_update(struct lacp_port *lacp_port)
+@@ -1325,7 +1313,7 @@ static void lacp_port_actor_update(struct lacp_port *lacp_port)
  	}
  	if (lacp_port->state == PORT_STATE_EXPIRED)
  		state |= INFO_STATE_EXPIRED;
@@ -90,109 +90,78 @@ index 1e5478b..e6676df 100644
  		state |= INFO_STATE_DEFAULTED;
  	if (teamd_port_count(lacp_port->ctx) > 0)
  		state |= INFO_STATE_AGGREGATION;
-@@ -1322,6 +1310,101 @@ static void lacp_port_actor_update(struct lacp_port *lacp_port)
+@@ -1334,6 +1322,70 @@ static void lacp_port_actor_update(struct lacp_port *lacp_port)
  
  static int lacpdu_send(struct lacp_port *lacp_port);
  
 +static int lacp_port_set_state(struct lacp_port *lacp_port,
 +			       enum lacp_port_state new_state);
 +
-+static bool lacp_port_better_for_fallback(struct lacp_port *lacp_port1, struct lacp_port *lacp_port2)
-+{
-+	int system_diff;
-+	struct lacpdu_info *actor1;
-+	struct lacpdu_info *actor2;
-+
-+	if (!lacp_port2)
-+		return true;
-+
-+	actor1 = &lacp_port1->actor;
-+	actor2 = &lacp_port2->actor;
-+
-+	system_diff = memcmp(actor1->system, actor2->system, ETH_ALEN);
-+	/* If system MACs differ, the port with the lower system wins. */
-+	if (system_diff != 0)
-+		return system_diff < 0;
-+
-+	/* If port priorities differ, the port with the higher priority wins. */
-+	if (actor2->port_priority != actor1->port_priority)
-+		return (ntohs(actor1->port_priority) > ntohs(actor2->port_priority));
-+
-+	/* Otherwise, the port with the lower number wins. */
-+	return ntohs(actor1->port) < ntohs(actor2->port);
-+}
-+
 +static int lacp_ports_update_fallback_state(struct lacp *lacp)
 +{
-+	struct lacp_port *current_fallback = NULL;
-+	struct lacp_port *new_fallback = NULL;
++	static int updating_fallback_state = 0;
 +	struct teamd_port *tdport;
 +	bool do_fallback = true;
++	int err = 0;
 +
 +	/* If fallback is disabled, no need to do anything. */
 +	if (!lacp->cfg.fallback) {
-+		return 0;
++		return err;
++	}
++
++	/* If we are already in the process of updating the fallback state,
++     * then just exit. */
++	if (updating_fallback_state) {
++		return err;
 +	}
 +
 +	/* Check all ports.
 +	 * If any port is receiving LACPDUs, we disable fallback altogether.
-+	 * Otherwise, the non-disabled port with the highest priority is moved
-+	 * to fallback mode. */
++	 * Otherwise, all non-disabled ports are moved to fallback state. */
 +	teamd_for_each_tdport(tdport, lacp->ctx) {
 +		struct lacp_port *lacp_port = lacp_port_get(lacp, tdport);
 +
-+		if (lacp_port->state == PORT_STATE_DISABLED) {
-+			/* Ignore disabled ports. */
-+			continue;
-+		}
 +		if (lacp_port->state == PORT_STATE_CURRENT || lacp_port->state == PORT_STATE_EXPIRED) {
 +			/* If at least one port is currently receiving LACPDUs, don't do any fallback. */
 +			do_fallback = false;
-+			continue;
-+		}
-+		if (lacp_port->state == PORT_STATE_FALLBACK) {
-+			/* Remember what the current fallback port is. */
-+			current_fallback = lacp_port;
-+		}
-+
-+		/* Port is either defaulted or already fallback, so it's a candidate for new fallback port.
-+		 * If there is already a viable candidate, check which one has higher priority. */
-+		if (lacp_port_better_for_fallback(lacp_port, new_fallback)) {
-+			new_fallback = lacp_port;
 +		}
 +	}
 +
-+	if (!do_fallback) {
-+		new_fallback = NULL;
-+	}
++	updating_fallback_state = 1;
++    /* Calls to lacp_port_set_state might trigger a recursive call back
++     * into this function. Use a static variable updating_fallback_state
++     * to detect that and prevent stack overflows or deep recursions. */
++	if (do_fallback) {
++		teamd_for_each_tdport(tdport, lacp->ctx) {
++			struct lacp_port *lacp_port = lacp_port_get(lacp, tdport);
 +
-+	if (current_fallback == new_fallback) {
-+		/* Current state is already fine, nothing to do. */
-+		return 0;
-+	}
++			if (lacp_port->state == PORT_STATE_DISABLED) {
++				/* Ignore disabled ports. */
++				continue;
++			}
++			err = err || lacp_port_set_state(lacp_port, PORT_STATE_FALLBACK);
++		}
++	} else {
++        /* If we no longer want to do fallback, and a port is in fallback
++         * state, move it to defaulted. */
++		teamd_for_each_tdport(tdport, lacp->ctx) {
++			struct lacp_port *lacp_port = lacp_port_get(lacp, tdport);
 +
-+	/* Fallback port has changed, move the old one back to defaulted (if there was one)
-+	 * and move the new one to fallback (if there is one)
-+	 */
-+	if (current_fallback) {
-+		/* Note: lacp_port_set_state will call back into lacp_ports_update_fallback_state.
-+		 * This is fine though: We disable the old fallback, so the second time will find
-+		 * that there is no fallback and enable the new one.
-+		 * Therefore, after this call, we don't need to set the state of new_fallback here
-+		 * as well.*/
-+		return lacp_port_set_state(current_fallback, PORT_STATE_DEFAULTED);
++			if (lacp_port->state == PORT_STATE_FALLBACK) {
++				err = err || lacp_port_set_state(lacp_port, PORT_STATE_DEFAULTED);
++				continue;
++			}
++		}
 +	}
-+	else if (new_fallback) {
-+		return lacp_port_set_state(new_fallback, PORT_STATE_FALLBACK);
-+	}
++	updating_fallback_state = 0;
 +
-+	return 0;
++	return err;
 +}
 +
  static int lacp_port_set_state(struct lacp_port *lacp_port,
  			       enum lacp_port_state new_state)
  {
-@@ -1361,6 +1444,7 @@ static int lacp_port_set_state(struct lacp_port *lacp_port,
+@@ -1373,6 +1425,7 @@ static int lacp_port_set_state(struct lacp_port *lacp_port,
  					   LACP_TIMEOUT_CB_NAME, lacp_port);
  		break;
  	case PORT_STATE_DEFAULTED:
@@ -200,7 +169,7 @@ index 1e5478b..e6676df 100644
  		teamd_loop_callback_disable(lacp_port->ctx,
  					    LACP_TIMEOUT_CB_NAME, lacp_port);
  		memset(&lacp_port->partner, 0, sizeof(lacp_port->partner));
-@@ -1394,6 +1478,10 @@ static int lacp_port_set_state(struct lacp_port *lacp_port,
+@@ -1406,6 +1459,10 @@ static int lacp_port_set_state(struct lacp_port *lacp_port,
  	if (err)
  		return err;
  
@@ -211,7 +180,7 @@ index 1e5478b..e6676df 100644
  	lacp_port_actor_update(lacp_port);
  
  	return lacpdu_send(lacp_port);
-@@ -1649,6 +1737,7 @@ static int lacp_callback_timeout(struct teamd_context *ctx, int events,
+@@ -1657,6 +1714,7 @@ static int lacp_callback_timeout(struct teamd_context *ctx, int events,
  		err = lacp_port_set_state(lacp_port, PORT_STATE_DEFAULTED);
  		break;
  	case PORT_STATE_DEFAULTED:
